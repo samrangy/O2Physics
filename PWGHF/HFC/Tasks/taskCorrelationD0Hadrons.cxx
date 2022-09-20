@@ -11,6 +11,7 @@
 
 /// \file taskCorrelationD0Hadrons.cxx
 /// \brief D0-Hadron correlator task - data-like, MC-reco and MC-kine analyses.
+/// \note Extended from taskCorrelationDDbar
 ///
 /// \author Samrangy Sadhu <samrangy.sadhu@cern.ch>, INFN Bari
 /// \author Swapnesh Santosh Khade <swapnesh.santosh.khade@cern.ch>, IIT Indore
