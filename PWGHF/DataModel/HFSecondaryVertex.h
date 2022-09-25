@@ -1019,6 +1019,7 @@ DECLARE_SOA_TABLE(DDbarRecoInfo, "AOD", "DDBARRECOINFO",
                   aod::hf_correlation_ddbar::MD,
                   aod::hf_correlation_ddbar::MDbar,
                   aod::hf_correlation_ddbar::SignalStatus);
+
 // definition of columns and tables for D0-Hadron correlation pairs
 namespace hf_correlation_d0hadron
 {
@@ -1039,6 +1040,7 @@ DECLARE_SOA_TABLE(DHadronRecoInfo, "AOD", "DHADRONRECOINFO",
                   aod::hf_correlation_d0hadron::MD,
                   aod::hf_correlation_d0hadron::MDbar,
                   aod::hf_correlation_d0hadron::SignalStatus);
+
 // definition of columns and tables for Dplus-Hadron correlation pairs
 namespace hf_correlation_dplushadron
 {
