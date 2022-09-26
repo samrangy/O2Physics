@@ -59,7 +59,6 @@ const double ptDAxisMin = 0.;
 const double ptDAxisMax = 36.;
 const double massD0 = 1.864;
 
-
 struct HfCorrelatorD0Hadrons {
   Produces<aod::DHadronPair> entryD0HadronPair;
   Produces<aod::DHadronRecoInfo> entryD0HadronRecoInfo;
@@ -202,7 +201,7 @@ struct HfCorrelatorD0Hadrons {
 
       // ========================== track loop starts here ================================
       for (const auto& track : tracks) {
-         registry.fill(HIST("hTrackCounterData"), 1); // fill total no. of tracks
+        registry.fill(HIST("hTrackCounterData"), 1); // fill total no. of tracks
         // Remove D0 daughters by checking track indices
         if ((candidate1.index0Id() == track.mRowIndex) || (candidate1.index1Id() == track.mRowIndex)) {
           continue;
@@ -214,10 +213,10 @@ struct HfCorrelatorD0Hadrons {
 
         // ===== soft pion removal ===================================================
         double InvMassDstar1 = 0., InvMassDstar2 = 0.;
-        bool isSoftpiD0 = false, isSoftpiD0bar = false;      
+        bool isSoftpiD0 = false, isSoftpiD0bar = false;
         double psum2 = RecoDecay::p2((candidate1.px() + track.px()), (candidate1.py() + track.py()), (candidate1.pz() + track.pz()));
         double Epion = std::sqrt((track.px() * track.px()) + (track.py() * track.py()) + (track.pz() * track.pz()) + (massPi * massPi));
-        InvMassDstar1 = RecoDecay::m(std::sqrt(psum2), (EPiProng0 + EKProng1 + Epion));        
+        InvMassDstar1 = RecoDecay::m(std::sqrt(psum2), (EPiProng0 + EKProng1 + Epion));
         InvMassDstar2 = RecoDecay::m(std::sqrt(psum2), (EKProng0 + EPiProng1 + Epion));
         if (candidate1.isSelD0() >= selectionFlagD0) {
           if ((std::abs(InvMassDstar1 - InvMassD0(candidate1)) - 0.14543) < softPionCut) {
@@ -330,7 +329,7 @@ struct HfCorrelatorD0Hadrons {
         }
       }
 
-      // ========================== Define parameters for soft pion removal ================================      
+      // ========================== Define parameters for soft pion removal ================================
       double massPi = RecoDecay::getMassPDG(kPiPlus);
       double massK = RecoDecay::getMassPDG(kKPlus);
       double EPiProng0 = RecoDecay::e(candidate1.pVectorProng0(), massPi);
@@ -366,7 +365,7 @@ struct HfCorrelatorD0Hadrons {
         bool isSoftpiD0 = false, isSoftpiD0bar = false;
         double psum2 = RecoDecay::p2((candidate1.px() + track.px()), (candidate1.py() + track.py()), (candidate1.pz() + track.pz()));
         double Epion = std::sqrt((track.px() * track.px()) + (track.py() * track.py()) + (track.pz() * track.pz()) + (massPi * massPi));
-        InvMassDstar1 = RecoDecay::m(std::sqrt(psum2), (EPiProng0 + EKProng1 + Epion));        
+        InvMassDstar1 = RecoDecay::m(std::sqrt(psum2), (EPiProng0 + EKProng1 + Epion));
         InvMassDstar2 = RecoDecay::m(std::sqrt(psum2), (EKProng0 + EPiProng1 + Epion));
 
         if (candidate1.isSelD0() >= selectionFlagD0) {
