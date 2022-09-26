@@ -9,7 +9,7 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-/// \file HfTaskCorrelationD0Hadrons.cxx
+/// \file taskCorrelationD0Hadrons.cxx
 /// \brief D0-Hadron correlator task - data-like, MC-reco and MC-kine analyses.
 /// \note Extended from taskCorrelationDDbar
 ///
