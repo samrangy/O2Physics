@@ -62,7 +62,6 @@ const double softPiMass = 0.14543;
 auto massPi = RecoDecay::getMassPDG(kPiPlus);
 auto massK = RecoDecay::getMassPDG(kKPlus);
 
-
 struct HfCorrelatorD0Hadrons {
   Produces<aod::DHadronPair> entryD0HadronPair;
   Produces<aod::DHadronRecoInfo> entryD0HadronRecoInfo;
@@ -128,7 +127,6 @@ struct HfCorrelatorD0Hadrons {
     registry.add("hMassD0barMCRecBkg", "D0bar background candidates - MC reco;inv. mass D0bar only (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hCountD0triggersMCGen", "D0 trigger particles - MC gen;;N of trigger D0", {HistType::kTH2F, {{1, -0.5, 0.5}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
   }
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // =============================================================================  Process starts for Data ==================================================================================
@@ -201,7 +199,7 @@ struct HfCorrelatorD0Hadrons {
 
       // ========================== track loop starts here ================================
       for (const auto& track : tracks) {
-         registry.fill(HIST("hTrackCounterData"), 1); // fill total no. of tracks
+        registry.fill(HIST("hTrackCounterData"), 1); // fill total no. of tracks
         // Remove D0 daughters by checking track indices
         if ((candidate1.index0Id() == track.globalIndex()) || (candidate1.index1Id() == track.globalIndex())) {
           continue;
@@ -213,12 +211,12 @@ struct HfCorrelatorD0Hadrons {
 
         // ===== soft pion removal ===================================================
         double invMassDstar1 = 0., invMassDstar2 = 0.;
-        bool isSoftpiD0 = false, isSoftpiD0bar = false;      
+        bool isSoftpiD0 = false, isSoftpiD0bar = false;
         auto pSum2 = RecoDecay::p2(candidate1.px() + track.px(), candidate1.py() + track.py(), candidate1.pz() + track.pz());
         auto ePion = track.energy(massPi);
         invMassDstar1 = std::sqrt((ePiK + ePion) * (ePiK + ePion) - pSum2);
         invMassDstar2 = std::sqrt((eKPi + ePion) * (eKPi + ePion) - pSum2);
-        
+
         if (candidate1.isSelD0() >= selectionFlagD0) {
           if ((std::abs(invMassDstar1 - InvMassD0(candidate1)) - softPiMass) < softPionCut) {
             isSoftpiD0 = true;
@@ -330,7 +328,7 @@ struct HfCorrelatorD0Hadrons {
         }
       }
 
-      // ========================== Define parameters for soft pion removal ================================      
+      // ========================== Define parameters for soft pion removal ================================
       auto ePiK = RecoDecay::e(candidate1.pVectorProng0(), massPi) + RecoDecay::e(candidate1.pVectorProng1(), massK);
       auto eKPi = RecoDecay::e(candidate1.pVectorProng0(), massK) + RecoDecay::e(candidate1.pVectorProng1(), massPi);
 
@@ -357,14 +355,14 @@ struct HfCorrelatorD0Hadrons {
           continue; // Remove secondary tracks
         }
         registry.fill(HIST("hTrackCounterMCRec"), 2); // fill no. of tracks before soft pion removal
-        
+
         // ===== soft pion removal ===================================================
         double invMassDstar1 = 0, invMassDstar2 = 0;
         bool isSoftpiD0 = false, isSoftpiD0bar = false;
         auto pSum2 = RecoDecay::p2(candidate1.px() + track.px(), candidate1.py() + track.py(), candidate1.pz() + track.pz());
         auto ePion = track.energy(massPi);
         invMassDstar1 = std::sqrt((ePiK + ePion) * (ePiK + ePion) - pSum2);
-        invMassDstar2 = std::sqrt((eKPi + ePion) * (eKPi + ePion) - pSum2);        
+        invMassDstar2 = std::sqrt((eKPi + ePion) * (eKPi + ePion) - pSum2);
 
         if (candidate1.isSelD0() >= selectionFlagD0) {
           if ((std::abs(invMassDstar1 - InvMassD0(candidate1)) - softPiMass) < softPionCut) {
