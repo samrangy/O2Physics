@@ -43,8 +43,6 @@ enum Code {
 };
 } // namespace pdg
 
-
-
 /// Finds pT bin in an array.
 /// \param bins  array of pT bins
 /// \param value  pT
