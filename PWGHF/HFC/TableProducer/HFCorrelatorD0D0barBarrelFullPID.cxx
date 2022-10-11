@@ -126,10 +126,10 @@ struct HfCorrelatorD0D0barBarrelFullPid {
     registry.add("hCountCtriggersMCGen", "c trigger particles - MC gen;;N of trigger c quark", {HistType::kTH2F, {{1, -0.5, 0.5}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
   }
 
-  Filter filterSelectCandidates = (aod::hf_selcandidate_d0_ALICE3_Barrel::isSelD0TOFplusRICHPID >= selectionFlagD0 || aod::hf_selcandidate_d0_ALICE3_Barrel::isSelD0barTOFplusRICHPID >= selectionFlagD0bar);
+  Partition<soa::Join<aod::HfCandProng2, aod::HFSelD0CandidateALICE3Barrel>> selectedD0candidates = (aod::hf_selcandidate_d0_ALICE3_Barrel::isSelD0TOFplusRICHPID >= selectionFlagD0 || aod::hf_selcandidate_d0_ALICE3_Barrel::isSelD0barTOFplusRICHPID >= selectionFlagD0bar);
 
   /// D0-D0bar correlation pair builder - for real data and data-like analysis (i.e. reco-level w/o matching request via MC truth)
-  void processData(aod::Collision const& collision, soa::Join<aod::Tracks, aod::TracksDCA>& tracks, soa::Filtered<soa::Join<aod::HfCandProng2, aod::HFSelD0CandidateALICE3Barrel>> const& candidates)
+  void processData(aod::Collision const& collision, soa::Join<aod::Tracks, aod::TracksDCA>& tracks, soa::Join<aod::HfCandProng2, aod::HFSelD0CandidateALICE3Barrel> const& candidates)
   {
     int nTracks = 0;
     if (collision.numContrib() > 1) {
@@ -149,7 +149,9 @@ struct HfCorrelatorD0D0barBarrelFullPid {
     }
     registry.fill(HIST("hMultiplicity"), nTracks);
 
-    for (auto& candidate1 : candidates) {
+    auto selectedD0candidatesGrouped = selectedD0candidates->sliceByCached(aod::hf_cand::collisionId, collision.globalIndex());
+
+    for (auto& candidate1 : selectedD0candidatesGrouped) {
       if (cutYCandMax >= 0. && std::abs(YD0(candidate1)) > cutYCandMax) {
         continue;
       }
@@ -188,7 +190,7 @@ struct HfCorrelatorD0D0barBarrelFullPid {
       if (candidate1.isSelD0TOFplusRICHPID() < selectionFlagD0) {
         continue;
       }
-      for (auto& candidate2 : candidates) {
+      for (auto& candidate2 : selectedD0candidatesGrouped) {
         if (!(candidate2.hfflag() & 1 << DecayType::D0ToPiK)) { // check decay channel flag for candidate2
           continue;
         }
@@ -236,7 +238,9 @@ struct HfCorrelatorD0D0barBarrelFullPid {
   PROCESS_SWITCH(HfCorrelatorD0D0barBarrelFullPid, processData, "Process data", false);
 
   /// D0-D0bar correlation pair builder - for MC reco-level analysis (candidates matched to true signal only, but also the various bkg sources are studied)
-  void processMcRec(aod::Collision const& collision, soa::Join<aod::Tracks, aod::TracksDCA>& tracks, soa::Filtered<soa::Join<aod::HfCandProng2, aod::HFSelD0CandidateALICE3Barrel, aod::HfCandProng2MCRec>> const& candidates)
+  Partition<soa::Join<aod::HfCandProng2, aod::HFSelD0CandidateALICE3Barrel, aod::HfCandProng2MCRec>> selectedD0candidatesMC = (aod::hf_selcandidate_d0_ALICE3_Barrel::isSelD0TOFplusRICHPID >= selectionFlagD0 || aod::hf_selcandidate_d0_ALICE3_Barrel::isSelD0barTOFplusRICHPID >= selectionFlagD0bar);
+
+  void processMcRec(aod::Collision const& collision, soa::Join<aod::Tracks, aod::TracksDCA>& tracks, soa::Join<aod::HfCandProng2, aod::HFSelD0CandidateALICE3Barrel, aod::HfCandProng2MCRec> const& candidates)
   {
     int nTracks = 0;
     if (collision.numContrib() > 1) {
@@ -256,12 +260,14 @@ struct HfCorrelatorD0D0barBarrelFullPid {
     }
     registry.fill(HIST("hMultiplicity"), nTracks);
 
+    auto selectedD0candidatesGroupedMC = selectedD0candidatesMC->sliceByCached(aod::hf_cand::collisionId, collision.globalIndex());
+
     // MC reco level
     bool flagD0Signal = false;
     bool flagD0Reflection = false;
     bool flagD0barSignal = false;
     bool flagD0barReflection = false;
-    for (auto& candidate1 : candidates) {
+    for (auto& candidate1 : selectedD0candidatesGroupedMC) {
       // check decay channel flag for candidate1
       if (!(candidate1.hfflag() & 1 << DecayType::D0ToPiK)) {
         continue;
@@ -315,7 +321,7 @@ struct HfCorrelatorD0D0barBarrelFullPid {
       }
       flagD0Signal = candidate1.flagMCMatchRec() == 1 << DecayType::D0ToPiK;        // flagD0Signal 'true' if candidate1 matched to D0 (particle)
       flagD0Reflection = candidate1.flagMCMatchRec() == -(1 << DecayType::D0ToPiK); // flagD0Reflection 'true' if candidate1, selected as D0 (particle), is matched to D0bar (antiparticle)
-      for (auto& candidate2 : candidates) {
+      for (auto& candidate2 : selectedD0candidatesGroupedMC) {
         if (!(candidate2.hfflag() & 1 << DecayType::D0ToPiK)) { // check decay channel flag for candidate2
           continue;
         }
@@ -436,7 +442,7 @@ struct HfCorrelatorD0D0barBarrelFullPid {
             if (std::abs(particle1.eta()) < etaCut && std::abs(particle2.eta()) < etaCut && particle1.pt() > ptCut && particle2.pt() > ptCut) { // fill with D and Dbar acceptance checks
               registry.fill(HIST("hDDbarVsEtaCut"), etaCut - epsilon, ptCut + epsilon);
             }
-            if (rightDecayChannels) { //fill with D and Dbar daughter particls acceptance checks
+            if (rightDecayChannels) { // fill with D and Dbar daughter particls acceptance checks
               bool candidate1DauInAcc = true;
               bool candidate2DauInAcc = true;
               for (auto& dau : particle1.daughters_as<MCParticlesPlus>()) {
@@ -477,7 +483,7 @@ struct HfCorrelatorD0D0barBarrelFullPid {
         continue;
       }
       int partMothPDG = particle1.mothers_as<MCParticlesPlus>().front().pdgCode();
-      //check whether mothers of quark c/cbar are still '4'/'-4' particles - in that case the c/cbar quark comes from its own fragmentation, skip it
+      // check whether mothers of quark c/cbar are still '4'/'-4' particles - in that case the c/cbar quark comes from its own fragmentation, skip it
       if (partMothPDG == particle1.pdgCode()) {
         continue;
       }

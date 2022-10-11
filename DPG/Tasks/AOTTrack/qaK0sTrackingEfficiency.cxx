@@ -25,7 +25,7 @@
 using namespace o2;
 using namespace o2::framework;
 
-using PIDTracks = soa::Join<aod::Tracks, aod::TracksExtra, aod::pidTPCPi>;
+using PIDTracks = soa::Join<aod::Tracks, aod::TracksExtra, aod::pidTPCFullPi>;
 using SelectedCollisions = soa::Join<aod::Collisions, aod::EvSels>;
 
 struct qaK0sTrackingEfficiency {
@@ -34,7 +34,7 @@ struct qaK0sTrackingEfficiency {
 
   void init(InitContext const&)
   {
-    const AxisSpec RAxis{100, 0.f, 10.f, "#it{R} (cm)"};
+    const AxisSpec RAxis{500, 0.f, 50.f, "#it{R} (cm)"};
     const AxisSpec pTAxis{200, 0.f, 10.f, "#it{p}_{T} (GeV/#it{c})"};
     const AxisSpec mAxis{200, 0.4f, 0.6f, "#it{m} (GeV/#it{c}^{2})"};
     const AxisSpec statusAxis{2, -0.5f, 1.5f, ""};

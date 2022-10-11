@@ -16,8 +16,7 @@
 ///           DiffCuts.mMinNBCs(7)
 ///           DiffCuts.mMinNTracks(0)
 ///           DiffCuts.mMaxNTracks(10000)
-///           DiffCuts.mMinNetCharge(0)
-///           DiffCuts.mMaxNetCharge(0)
+///           DiffCuts.mNetCharges({0})
 ///           DiffCuts.mPidHypo(211)
 ///           DiffCuts.mMinPosz(-1000.)
 ///           DiffCuts.mMaxPosz(1000.)
@@ -66,6 +65,7 @@ struct DiffMCQA {
   MutableConfigurable<DGCutparHolder> DGCuts{"DGCuts", {}, "DG event cuts"};
   Configurable<bool> withAmbTrackAnalysis{"ambiguousTracks", false, "with ambiguous tracks analysis"};
   Configurable<bool> withAmbFwdTrackAnalysis{"ambiguousFwdTracks", false, "with ambiguous forward tracks analysis"};
+  Configurable<bool> doCleanFITBC{"doCleanFITBC", false, "Require cleanFIT in compatible BCs"};
 
   // structures to hold information about the possible BCs the ambiguous tracks/FwdTracks belong to
   o2::dataformats::bcRanges abcrs = o2::dataformats::bcRanges("ambiguous_tracks");
@@ -190,7 +190,7 @@ struct DiffMCQA {
     auto t3 = pc.inputs().get<TableConsumer>("Run3MatchedToBCSparse")->asArrowTable();
     auto bcs = BCs({t1, t2, t3});
 
-    if (withAmbFwdTrackAnalysis) {
+    if (withAmbTrackAnalysis) {
       auto t4 = pc.inputs().get<TableConsumer>("AmbiguousTracks")->asArrowTable();
       auto ambtracks = ATs({t4});
       ambtracks.bindExternalIndices(&bcs);
@@ -357,11 +357,17 @@ struct DiffMCQA {
     // get BCrange to test for FIT signals
     auto bcSlice = MCcompatibleBCs(collision, diffCuts.NDtcoll(), bct0s, diffCuts.minNBCs());
 
-    // no FIT signal in bcSlice
-    for (auto& bc : bcSlice) {
-      if (!cleanFIT(bc, diffCuts.FITAmpLimits())) {
+    // no FIT signal in bcSlice / collision
+    if (doCleanFITBC) {
+      for (auto& bc : bcSlice) {
+        if (!cleanFIT(bc, diffCuts.FITAmpLimits())) {
+          isDGcandidate = false;
+          break;
+        }
+      }
+    } else {
+      if (!cleanFITCollision(collision, diffCuts.FITAmpLimits())) {
         isDGcandidate = false;
-        break;
       }
     }
     if (isPythiaDiff) {
@@ -522,6 +528,7 @@ struct DiffMCQA {
     // net charge and invariant mass
     bool goodetas = true;
     bool goodpts = true;
+    bool goodnchs = true;
     auto netCharge = 0;
     auto lvtmp = TLorentzVector();
     auto ivm = TLorentzVector();
@@ -623,7 +630,11 @@ struct DiffMCQA {
     } else {
       registry.get<TH1>(HIST("Stat"))->Fill(15., isDGcandidate * 1.);
     }
-    isDGcandidate &= (netCharge >= diffCuts.minNetCharge());
+    auto netChargeValues = diffCuts.netCharges();
+    if (std::find(netChargeValues.begin(), netChargeValues.end(), netCharge) == netChargeValues.end()) {
+      goodnchs = false;
+    }
+    isDGcandidate &= goodnchs;
     if (isPythiaDiff) {
       registry.get<TH1>(HIST("StatDiff1"))->Fill(16., isDGcandidate * 1.);
     } else if (isGraniittiDiff) {
@@ -631,7 +642,6 @@ struct DiffMCQA {
     } else {
       registry.get<TH1>(HIST("Stat"))->Fill(16., isDGcandidate * 1.);
     }
-    isDGcandidate &= (netCharge <= diffCuts.maxNetCharge());
     if (isPythiaDiff) {
       registry.get<TH1>(HIST("StatDiff1"))->Fill(17., isDGcandidate * 1.);
     } else if (isGraniittiDiff) {
