@@ -118,13 +118,13 @@ struct HfCorrelatorD0Hadrons {
     registry.add("hMassD01D", "D0,D0bar candidates;inv. mass (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH1F, {{massAxisBins, massAxisMin, massAxisMax}}});
     registry.add("hMassD0bar1D", "D0,D0bar candidates;inv. mass (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH1F, {{massAxisBins, massAxisMin, massAxisMax}}});
 
-    registry.add("hMassD0MCRecSig", "D0 signal candidates - MC reco;inv. mass (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hMassD0SigMCRec", "D0 signal candidates - MC reco;inv. mass (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
 
-    registry.add("hMassD0MCRecRefl", "D0 reflection candidates - MC reco;inv. mass (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
-    registry.add("hMassD0MCRecBkg", "D0 background candidates - MC reco;inv. mass (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
-    registry.add("hMassD0barMCRecSig", "D0bar signal candidates - MC reco;inv. mass D0bar only (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
-    registry.add("hMassD0barMCRecRefl", "D0bar reflection candidates - MC reco;inv. mass D0bar only (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
-    registry.add("hMassD0barMCRecBkg", "D0bar background candidates - MC reco;inv. mass D0bar only (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hMassD0MCReflRec", "D0 reflection candidates - MC reco;inv. mass (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hMassD0BkgMCRec", "D0 background candidates - MC reco;inv. mass (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hMassD0barSigMCRec", "D0bar signal candidates - MC reco;inv. mass D0bar only (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hMassD0barReflMCRec", "D0bar reflection candidates - MC reco;inv. mass D0bar only (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("hMassD0barBkgMCRec", "D0bar background candidates - MC reco;inv. mass D0bar only (#pi K) (GeV/#it{c}^{2});entries", {HistType::kTH2F, {{massAxisBins, massAxisMin, massAxisMax}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hCountD0triggersMCGen", "D0 trigger particles - MC gen;;N of trigger D0", {HistType::kTH2F, {{1, -0.5, 0.5}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
   }
 
@@ -315,20 +315,20 @@ struct HfCorrelatorD0Hadrons {
       // fill invariant mass plots from D0/D0bar signal and background candidates
       if (candidate1.isSelD0() >= selectionFlagD0) {                  // only reco as D0
         if (candidate1.flagMCMatchRec() == 1 << DecayType::D0ToPiK) { // also matched as D0
-          registry.fill(HIST("hMassD0MCRecSig"), InvMassD0(candidate1), candidate1.pt(), efficiencyWeight);
+          registry.fill(HIST("hMassD0SigMCRec"), InvMassD0(candidate1), candidate1.pt(), efficiencyWeight);
         } else if (candidate1.flagMCMatchRec() == -(1 << DecayType::D0ToPiK)) {
-          registry.fill(HIST("hMassD0MCRecRefl"), InvMassD0(candidate1), candidate1.pt(), efficiencyWeight);
+          registry.fill(HIST("hMassD0MCReflRec"), InvMassD0(candidate1), candidate1.pt(), efficiencyWeight);
         } else {
-          registry.fill(HIST("hMassD0MCRecBkg"), InvMassD0(candidate1), candidate1.pt(), efficiencyWeight);
+          registry.fill(HIST("hMassD0BkgMCRec"), InvMassD0(candidate1), candidate1.pt(), efficiencyWeight);
         }
       }
       if (candidate1.isSelD0bar() >= selectionFlagD0bar) {               // only reco as D0bar
         if (candidate1.flagMCMatchRec() == -(1 << DecayType::D0ToPiK)) { // also matched as D0bar
-          registry.fill(HIST("hMassD0barMCRecSig"), InvMassD0bar(candidate1), candidate1.pt(), efficiencyWeight);
+          registry.fill(HIST("hMassD0barSigMCRec"), InvMassD0bar(candidate1), candidate1.pt(), efficiencyWeight);
         } else if (candidate1.flagMCMatchRec() == 1 << DecayType::D0ToPiK) {
-          registry.fill(HIST("hMassD0barMCRecRefl"), InvMassD0bar(candidate1), candidate1.pt(), efficiencyWeight);
+          registry.fill(HIST("hMassD0barReflMCRec"), InvMassD0bar(candidate1), candidate1.pt(), efficiencyWeight);
         } else {
-          registry.fill(HIST("hMassD0barMCRecBkg"), InvMassD0bar(candidate1), candidate1.pt(), efficiencyWeight);
+          registry.fill(HIST("hMassD0barBkgMCRec"), InvMassD0bar(candidate1), candidate1.pt(), efficiencyWeight);
         }
       }
 
