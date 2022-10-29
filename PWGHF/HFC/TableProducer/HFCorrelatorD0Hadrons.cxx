@@ -153,7 +153,7 @@ struct HfCorrelatorD0Hadrons {
       return;
     }
     registry.fill(HIST("hMultiplicity"), nTracks);
-    
+
     auto selectedD0CandidatesGrouped = selectedD0Candidates->sliceByCached(aod::hf_cand::collisionId, collision.globalIndex());
 
     for (auto const& candidate1 : selectedD0CandidatesGrouped) {
@@ -279,7 +279,7 @@ struct HfCorrelatorD0Hadrons {
       return;
     }
     registry.fill(HIST("hMultiplicity"), nTracks);
-    
+
     auto selectedD0CandidatesGroupedMC = selectedD0candidatesMC->sliceByCached(aod::hf_cand::collisionId, collision.globalIndex());
     // MC reco level
     bool flagD0 = false;
