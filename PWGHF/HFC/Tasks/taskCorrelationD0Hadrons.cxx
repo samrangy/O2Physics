@@ -152,8 +152,6 @@ struct HfTaskCorrelationD0Hadrons {
 
     }};
 
-
-
   void init(o2::framework::InitContext&)
   {
     int nBinspTaxis = binsCorrelations->size() - 1;
