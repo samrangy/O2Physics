@@ -208,7 +208,6 @@ struct HfTaskCorrelationD0Hadrons {
       if (applyEfficiency) {
         efficiencyWeight = 1. / (efficiencyDmeson->at(o2::analysis::findBin(binsEfficiency, ptD))); // ***** track efficiency to be implemented *****
       }
-
       // reject entries outside pT ranges of interest
       if (ptBinD == -1) { // at least one particle outside accepted pT range
         continue;
@@ -264,9 +263,7 @@ struct HfTaskCorrelationD0Hadrons {
       double massD = pairEntry.mD();
       double massDbar = pairEntry.mDbar();
       int signalStatus = pairEntry.signalStatus();
-
       int ptBinD = o2::analysis::findBin(binsCorrelations, ptD);
-
       double efficiencyWeight = 1.;
       if (applyEfficiency) {
         efficiencyWeight = 1. / (efficiencyDmeson->at(o2::analysis::findBin(binsEfficiency, ptD)));
@@ -283,7 +280,7 @@ struct HfTaskCorrelationD0Hadrons {
       // check if correlation entry belongs to signal region, sidebands or is outside both, and fill correlation plots
 
       // ---------------------- Fill plots for signal case, D0 ->1, D0bar ->8 ---------------------------------------------
-      if ((massD > signalRegionInner->at(ptBinD) && massD < signalRegionOuter->at(ptBinD)) && (signalStatus == 1)) {
+      if ((massD > signalRegionInner->at(ptBinD) && massD < signalRegionOuter->at(ptBinD)) && (signalStatus & 1)) {
         // in signal region
         registry.fill(HIST("hCorrel2DVsPtSignalRegionRecSig"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSignalRegionRecSig"), deltaPhi, deltaEta, efficiencyWeight);
@@ -291,7 +288,7 @@ struct HfTaskCorrelationD0Hadrons {
         registry.fill(HIST("hDeltaPhiPtIntSignalRegionRecSig"), deltaPhi, efficiencyWeight);
       }
 
-      if ((massDbar > signalRegionInner->at(ptBinD) && massDbar < signalRegionOuter->at(ptBinD)) && (signalStatus == 8)) {
+      if ((massDbar > signalRegionInner->at(ptBinD) && massDbar < signalRegionOuter->at(ptBinD)) && (signalStatus & 8)) {
         // in signal region
         registry.fill(HIST("hCorrel2DVsPtSignalRegionRecSig"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSignalRegionRecSig"), deltaPhi, deltaEta, efficiencyWeight);
@@ -301,7 +298,7 @@ struct HfTaskCorrelationD0Hadrons {
 
       if ((((massD > sidebandLeftOuter->at(ptBinD)) && (massD < sidebandLeftInner->at(ptBinD))) ||
            ((massD > sidebandRightInner->at(ptBinD) && massD < sidebandRightOuter->at(ptBinD)))) &&
-          (signalStatus == 1)) {
+          (signalStatus & 1)) {
         // in sideband region
         registry.fill(HIST("hCorrel2DVsPtSidebandsRecSig"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSidebandsRecSig"), deltaPhi, deltaEta, efficiencyWeight);
@@ -311,7 +308,7 @@ struct HfTaskCorrelationD0Hadrons {
 
       if ((((massDbar > sidebandLeftOuter->at(ptBinD)) && (massDbar < sidebandLeftInner->at(ptBinD))) ||
            ((massDbar > sidebandRightInner->at(ptBinD) && massDbar < sidebandRightOuter->at(ptBinD)))) &&
-          (signalStatus == 8)) {
+          (signalStatus & 8)) {
         // in sideband region
         registry.fill(HIST("hCorrel2DVsPtSidebandsRecSig"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSidebandsRecSig"), deltaPhi, deltaEta, efficiencyWeight);
@@ -320,7 +317,7 @@ struct HfTaskCorrelationD0Hadrons {
       }
 
       // ---------------------- Fill plots for reflection case, D0 ->2, D0bar ->16 ---------------------------------------------
-      if ((massD > signalRegionInner->at(ptBinD) && massD < signalRegionOuter->at(ptBinD)) && (signalStatus == 2)) {
+      if ((massD > signalRegionInner->at(ptBinD) && massD < signalRegionOuter->at(ptBinD)) && (signalStatus & 2)) {
         // in signal region
         registry.fill(HIST("hCorrel2DVsPtSignalRegionRecRef"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSignalRegionRecRef"), deltaPhi, deltaEta, efficiencyWeight);
@@ -328,7 +325,7 @@ struct HfTaskCorrelationD0Hadrons {
         registry.fill(HIST("hDeltaPhiPtIntSignalRegionRecRef"), deltaPhi, efficiencyWeight);
       }
 
-      if ((massDbar > signalRegionInner->at(ptBinD) && massDbar < signalRegionOuter->at(ptBinD)) && (signalStatus == 16)) {
+      if ((massDbar > signalRegionInner->at(ptBinD) && massDbar < signalRegionOuter->at(ptBinD)) && (signalStatus & 16)) {
         // in signal region
         registry.fill(HIST("hCorrel2DVsPtSignalRegionRecRef"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSignalRegionRecRef"), deltaPhi, deltaEta, efficiencyWeight);
@@ -338,7 +335,7 @@ struct HfTaskCorrelationD0Hadrons {
 
       if ((((massD > sidebandLeftOuter->at(ptBinD)) && (massD < sidebandLeftInner->at(ptBinD))) ||
            ((massD > sidebandRightInner->at(ptBinD) && massD < sidebandRightOuter->at(ptBinD)))) &&
-          (signalStatus == 2)) {
+          (signalStatus & 2)) {
         // in sideband region
         registry.fill(HIST("hCorrel2DVsPtSidebandsRecRef"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSidebandsRecRef"), deltaPhi, deltaEta, efficiencyWeight);
@@ -348,7 +345,7 @@ struct HfTaskCorrelationD0Hadrons {
 
       if ((((massDbar > sidebandLeftOuter->at(ptBinD)) && (massDbar < sidebandLeftInner->at(ptBinD))) ||
            ((massDbar > sidebandRightInner->at(ptBinD) && massDbar < sidebandRightOuter->at(ptBinD)))) &&
-          (signalStatus == 16)) {
+          (signalStatus & 16)) {
         // in sideband region
         registry.fill(HIST("hCorrel2DVsPtSidebandsRecRef"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSidebandsRecRef"), deltaPhi, deltaEta, efficiencyWeight);
@@ -357,7 +354,7 @@ struct HfTaskCorrelationD0Hadrons {
       }
 
       // ---------------------- Fill plots for background case, D0 ->4, D0bar ->32 ---------------------------------------------
-      if ((massD > signalRegionInner->at(ptBinD) && massD < signalRegionOuter->at(ptBinD)) && (signalStatus == 4)) {
+      if ((massD > signalRegionInner->at(ptBinD) && massD < signalRegionOuter->at(ptBinD)) && (signalStatus & 4)) {
         // in signal region
         registry.fill(HIST("hCorrel2DVsPtSignalRegionRecBg"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSignalRegionRecBg"), deltaPhi, deltaEta, efficiencyWeight);
@@ -365,7 +362,7 @@ struct HfTaskCorrelationD0Hadrons {
         registry.fill(HIST("hDeltaPhiPtIntSignalRegionRecBg"), deltaPhi, efficiencyWeight);
       }
 
-      if ((massDbar > signalRegionInner->at(ptBinD) && massDbar < signalRegionOuter->at(ptBinD)) && (signalStatus == 32)) {
+      if ((massDbar > signalRegionInner->at(ptBinD) && massDbar < signalRegionOuter->at(ptBinD)) && (signalStatus & 32)) {
         // in signal region
         registry.fill(HIST("hCorrel2DVsPtSignalRegionRecBg"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSignalRegionRecBg"), deltaPhi, deltaEta, efficiencyWeight);
@@ -375,7 +372,7 @@ struct HfTaskCorrelationD0Hadrons {
 
       if ((((massD > sidebandLeftOuter->at(ptBinD)) && (massD < sidebandLeftInner->at(ptBinD))) ||
            ((massD > sidebandRightInner->at(ptBinD) && massD < sidebandRightOuter->at(ptBinD)))) &&
-          (signalStatus == 4)) {
+          (signalStatus & 4)) {
         // in sideband region
         registry.fill(HIST("hCorrel2DVsPtSidebandsRecBg"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSidebandsRecBg"), deltaPhi, deltaEta, efficiencyWeight);
@@ -385,7 +382,7 @@ struct HfTaskCorrelationD0Hadrons {
 
       if ((((massDbar > sidebandLeftOuter->at(ptBinD)) && (massDbar < sidebandLeftInner->at(ptBinD))) ||
            ((massDbar > sidebandRightInner->at(ptBinD) && massDbar < sidebandRightOuter->at(ptBinD)))) &&
-          (signalStatus == 32)) {
+          (signalStatus & 32)) {
         // in sideband region
         registry.fill(HIST("hCorrel2DVsPtSidebandsRecBg"), deltaPhi, deltaEta, ptD, ptHadron, efficiencyWeight);
         registry.fill(HIST("hCorrel2DPtIntSidebandsRecBg"), deltaPhi, deltaEta, efficiencyWeight);

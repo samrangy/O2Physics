@@ -106,6 +106,7 @@ struct HfCorrelatorD0Hadrons {
      {"hEtaRec", "D0,D0bar candidates - MC reco;candidate #it{#eta};entries", {HistType::kTH1F, {{yAxisNBins, yAxisMin, yAxisMax}}}},
      {"hPhiRec", "D0,D0bar candidates - MC reco;candidate #it{#varphi};entries", {HistType::kTH1F, {{phiAxisNBins, phiAxisMin, phiAxisMax}}}},
      {"hYRec", "D0,D0bar candidates - MC reco;candidate #it{y};entries", {HistType::kTH1F, {{yAxisNBins, yAxisMin, yAxisMax}}}},
+     {"hSignalStatusRec", "Signal Status - MC reco;candidate sidnalStatus;entries", {HistType::kTH1F, {{70, 0, 70}}}},
      {"hEvtCountGen", "Event counter - MC gen;;entries", {HistType::kTH1F, {{1, -0.5, 0.5}}}},
      {"hPtCandGen", "D0,D0bar particles - MC gen;particle #it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{ptDAxisNBins, ptDAxisMin, ptDAxisMax}}}},
      {"hEtaGen", "D0,D0bar particles - MC gen;particle #it{#eta};entries", {HistType::kTH1F, {{yAxisNBins, yAxisMin, yAxisMax}}}},
@@ -419,6 +420,8 @@ struct HfCorrelatorD0Hadrons {
           signalStatus += 32;
         } // background case D0bar
 
+        registry.fill(HIST("hSignalStatusRec"), signalStatus);
+        
         entryD0HadronPair(getDeltaPhi(track.phi(), candidate1.phi()),
                           track.eta() - candidate1.eta(),
                           candidate1.pt(),
