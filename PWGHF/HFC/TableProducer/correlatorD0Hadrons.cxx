@@ -421,7 +421,7 @@ struct HfCorrelatorD0Hadrons {
         } // background case D0bar
 
         registry.fill(HIST("hSignalStatusRec"), signalStatus);
-        
+
         entryD0HadronPair(getDeltaPhi(track.phi(), candidate1.phi()),
                           track.eta() - candidate1.eta(),
                           candidate1.pt(),
