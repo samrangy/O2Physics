@@ -48,10 +48,16 @@ struct femtoDreamDebugTrack {
   Configurable<bool> ConfIsMC{"ConfIsMC", false, "Enable additional Histogramms in the case of a MonteCarlo Run"};
   Configurable<int> ConfPDGCodePartOne{"ConfPDGCodePartOne", 2212, "Particle 1 - PDG code"};
   Configurable<uint32_t> ConfCutPartOne{"ConfCutPartOne", 5542474, "Particle 1 - Selection bit from cutCulator"};
-  Configurable<std::vector<int>> ConfPIDPartOne{"ConfPIDPartOne", std::vector<int>{1}, "Particle 1 - Read from cutCulator"};
+  Configurable<int> ConfPIDPartOne{"ConfPIDPartOne", 1, "Particle 1 - Read from cutCulator"};
   Configurable<std::vector<float>> ConfTrkPIDnSigmaMax{"ConfTrkPIDnSigmaMax", std::vector<float>{3.5f, 3.f, 2.5f}, "This configurable needs to be the same as the one used in the producer task"};
   ConfigurableAxis ConfTempFitVarBins{"ConfDTempFitVarBins", {300, -0.15, 0.15}, "binning of the TempFitVar in the pT vs. TempFitVar plot"};
   ConfigurableAxis ConfTempFitVarpTBins{"ConfTempFitVarpTBins", {20, 0.5, 4.05}, "pT binning of the pT vs. TempFitVar plot"};
+
+  ConfigurableAxis ConfTempFitVarpBins{"ConfTempFitVarpBins", {600, 0, 6}, "p binning for the p vs Nsigma TPC/TOF plot"};
+  ConfigurableAxis ConfTempFitVarNsigmaTPCBins{"ConfTempFitVarNsigmaTPCBins", {1600, -8, 8}, "binning of Nsigma TPC plot"};
+  ConfigurableAxis ConfTempFitVarNsigmaTOFBins{"ConfTempFitVarNsigmaTOFBins", {3000, -15, 15}, "binning of the Nsigma TOF plot"};
+  ConfigurableAxis ConfTempFitVarNsigmaTPCTOFBins{"ConfTempFitVarNsigmaTPCTOFBins", {1000, 0, 10}, "binning of the Nsigma TPC+TOF plot"};
+  ConfigurableAxis ConfTempFitVarDummy{"ConfTempFitVarDummy", {1, 0, 1}, "Dummy axis for inv mass"};
 
   using FemtoFullParticles = soa::Join<aod::FDParticles, aod::FDExtParticles>;
   Partition<FemtoFullParticles> partsOne = (aod::femtodreamparticle::partType == uint8_t(aod::femtodreamparticle::ParticleType::kTrack)) && ((aod::femtodreamparticle::cut & ConfCutPartOne) == ConfCutPartOne);
@@ -67,7 +73,7 @@ struct femtoDreamDebugTrack {
   FemtoDreamParticleHisto<aod::femtodreamparticle::ParticleType::kTrack> trackHisto;
 
   /// The configurables need to be passed to an std::vector
-  std::vector<int> vPIDPartOne;
+  int vPIDPartOne;
   std::vector<float> kNsigma;
 
   /// Histogram output
@@ -76,7 +82,7 @@ struct femtoDreamDebugTrack {
   void init(InitContext&)
   {
     eventHisto.init(&qaRegistry);
-    trackHisto.init(&qaRegistry, ConfTempFitVarpTBins, ConfTempFitVarBins, ConfIsMC, ConfPDGCodePartOne.value, true);
+    trackHisto.init(&qaRegistry, ConfTempFitVarpTBins, ConfTempFitVarBins, ConfTempFitVarDummy, ConfTempFitVarpBins, ConfTempFitVarNsigmaTPCBins, ConfTempFitVarNsigmaTOFBins, ConfTempFitVarNsigmaTPCTOFBins, ConfIsMC, ConfPDGCodePartOne.value, true);
     vPIDPartOne = ConfPIDPartOne.value;
     kNsigma = ConfTrkPIDnSigmaMax.value;
   }

@@ -64,6 +64,8 @@ struct reso2initializer {
   Configurable<std::string> lutPath{"lutPath", "GLO/Param/MatLUT", "Path of the Lut parametrization"};
   Configurable<std::string> geoPath{"geoPath", "GLO/Config/GeometryAligned", "Path of the geometry file"};
 
+  Configurable<bool> cfgFatalWhenNull{"cfgFatalWhenNull", true, "Fatal when null"};
+
   // Configurables
   Configurable<bool> ConfIsRun3{"ConfIsRun3", false, "Running on Pilot beam"}; // Choose if running on converted data or pilot beam
   Configurable<double> d_bz_input{"d_bz", -999, "bz field, -999 is automatic"};
@@ -74,6 +76,8 @@ struct reso2initializer {
   Configurable<bool> ConfEvtTriggerCheck{"ConfEvtTriggerCheck", true, "Evt sel: check for trigger"};
   Configurable<int> ConfEvtTriggerSel{"ConfEvtTriggerSel", kINT7, "Evt sel: trigger"};
   Configurable<bool> ConfEvtOfflineCheck{"ConfEvtOfflineCheck", false, "Evt sel: check for offline selection"};
+
+  Configurable<std::string> cfgMultName{"cfgMultName", "FT0M", "The name of multiplicity estimator"};
 
   // Pre-selection cuts
   Configurable<float> cfgCutEta{"cfgCutEta", 0.8f, "Eta range for tracks"};
@@ -135,12 +139,13 @@ struct reso2initializer {
                                                     || (nabs(aod::mcparticle::pdgCode) == 113)     // rho(770)
                                                     || (nabs(aod::mcparticle::pdgCode) == 213)     // rho(770)pm
                                                     || (nabs(aod::mcparticle::pdgCode) == 3224)    // Sigma(1385)+
-                                                    || (nabs(aod::mcparticle::pdgCode) == 3124)    // Sigma(1385)-
+                                                    || (nabs(aod::mcparticle::pdgCode) == 3124)    // Lambda(1520)
                                                     || (nabs(aod::mcparticle::pdgCode) == 3324)    // Xi(1530)0
+                                                    || (nabs(aod::mcparticle::pdgCode) == 10323)   // K1(1270)+
                                                     || (nabs(aod::mcparticle::pdgCode) == 123314)  // Xi(1820)0
                                                     || (nabs(aod::mcparticle::pdgCode) == 123324); // Xi(1820)-0
 
-  using ResoEvents = soa::Join<aod::Collisions, aod::EvSels, aod::Mults, aod::CentFT0Ms>;
+  using ResoEvents = soa::Join<aod::Collisions, aod::EvSels, aod::Mults, aod::CentFT0Ms, aod::CentFT0Cs, aod::CentFT0As>;
   using ResoEventsMC = soa::Join<ResoEvents, aod::McCollisionLabels>;
   using ResoTracks = aod::Reso2TracksPIDExt;
   using ResoTracksMC = soa::Join<ResoTracks, aod::McTrackLabels>;
@@ -260,6 +265,23 @@ struct reso2initializer {
     return true;
   }
 
+  // Multiplicity estimator selection
+  template <typename ResoColl>
+  float MultEst(ResoColl ResoEvents)
+  {
+    if (cfgMultName.value == "FT0M") {
+      return ResoEvents.centFT0M();
+    } else if (cfgMultName.value == "FT0C") {
+      return ResoEvents.centFT0C();
+    } else if (cfgMultName.value == "FT0A") {
+      return ResoEvents.centFT0A();
+    } else if (cfgMultName.value == "FV0M") {
+      return ResoEvents.multFV0M();
+    } else {
+      return ResoEvents.centFT0M();
+    }
+  }
+
   // Filter for all tracks
   template <bool isMC, typename TrackType, typename CollisionType>
   void fillTracks(CollisionType const& collision, TrackType const& tracks)
@@ -308,7 +330,13 @@ struct reso2initializer {
                 track.tpcNSigmaPr(),
                 track.tofNSigmaPi(),
                 track.tofNSigmaKa(),
-                track.tofNSigmaPr());
+                track.tofNSigmaPr(),
+                track.tpcSignal(),
+                track.passedITSRefit(),
+                track.passedTPCRefit(),
+                track.tpcCrossedRowsOverFindableCls(),
+                track.itsChi2NCl(),
+                track.tpcChi2NCl());
       if constexpr (isMC) {
         fillMCTrack(track);
       }
@@ -627,6 +655,13 @@ struct reso2initializer {
     d_bz = 0;
     colCuts.setCuts(ConfEvtZvtx, ConfEvtTriggerCheck, ConfEvtTriggerSel, ConfEvtOfflineCheck, ConfIsRun3);
     colCuts.init(&qaRegistry);
+
+    ccdb->setURL(ccdburl.value);
+    ccdb->setCaching(true);
+    ccdb->setLocalObjectValidityChecking();
+    ccdb->setFatalWhenNull(cfgFatalWhenNull);
+    uint64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    ccdb->setCreatedNotAfter(now); // TODO must become global parameter from the train creation time
   }
 
   void initCCDB(aod::BCsWithTimestamps::iterator const& bc) // Simple copy from LambdaKzeroFinder.cxx
@@ -683,7 +718,7 @@ struct reso2initializer {
     colCuts.fillQA(collision);
 
     if (ConfIsRun3) {
-      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.centFT0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
+      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), MultEst(collision), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     } else {
       resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.multFV0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     }
@@ -705,7 +740,7 @@ struct reso2initializer {
     colCuts.fillQA(collision);
 
     if (ConfIsRun3) {
-      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.centFT0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
+      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), MultEst(collision), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     } else {
       resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.multFV0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     }
@@ -729,7 +764,7 @@ struct reso2initializer {
     colCuts.fillQA(collision);
 
     if (ConfIsRun3) {
-      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.centFT0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
+      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), MultEst(collision), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     } else {
       resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.multFV0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     }
@@ -752,7 +787,7 @@ struct reso2initializer {
     colCuts.fillQA(collision);
 
     if (ConfIsRun3) {
-      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.centFT0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
+      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), MultEst(collision), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     } else {
       resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.multFV0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     }
@@ -778,7 +813,7 @@ struct reso2initializer {
     colCuts.fillQA(collision);
 
     if (ConfIsRun3) {
-      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.centFT0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
+      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), MultEst(collision), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     } else {
       resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.multFV0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     }
@@ -806,7 +841,7 @@ struct reso2initializer {
     colCuts.fillQA(collision);
 
     if (ConfIsRun3) {
-      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.centFT0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
+      resoCollisions(collision.posX(), collision.posY(), collision.posZ(), MultEst(collision), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     } else {
       resoCollisions(collision.posX(), collision.posY(), collision.posZ(), collision.multFV0M(), collision.multTPC(), colCuts.computeSphericity(collision, tracks), d_bz, bc.timestamp());
     }
