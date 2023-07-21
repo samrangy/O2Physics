@@ -498,6 +498,11 @@ class VarManager : public TObject
   {
     fgFitterTwoProngFwd.setTGeoMat(true);
   }
+  // No material budget in fwdtrack propagation
+  static void SetupFwdDCAFitterNoCorr()
+  {
+    fgFitterTwoProngFwd.setTGeoMat(false);
+  }
 
   static auto getEventPlane(int harm, float qnxa, float qnya)
   {
@@ -854,6 +859,9 @@ void VarManager::FillTrack(T const& track, float* values)
   // Quantities based on the basic table (contains just kine information and filter bits)
   if constexpr ((fillMap & Track) > 0 || (fillMap & Muon) > 0 || (fillMap & ReducedTrack) > 0 || (fillMap & ReducedMuon) > 0) {
     values[kPt] = track.pt();
+    if (fgUsedVars[kP]) {
+      values[kP] = track.p();
+    }
     if (fgUsedVars[kPx]) {
       values[kPx] = track.px();
     }
