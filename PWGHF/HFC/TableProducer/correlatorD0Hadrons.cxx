@@ -185,8 +185,8 @@ struct HfCorrelatorD0Hadrons {
 
   Partition<soa::Join<aod::HfCand2Prong, aod::HfSelD0>> selectedD0Candidates = aod::hf_sel_candidate_d0::isSelD0 >= selectionFlagD0 || aod::hf_sel_candidate_d0::isSelD0bar >= selectionFlagD0bar;
   Partition<soa::Join<aod::HfCand2Prong, aod::HfSelD0, aod::HfCand2ProngMcRec>> selectedD0candidatesMc = aod::hf_sel_candidate_d0::isSelD0 >= selectionFlagD0 || aod::hf_sel_candidate_d0::isSelD0bar >= selectionFlagD0bar;
-  
-  //Filters for ME
+
+  // Filters for ME
   Filter collisionFilter = aod::hf_selection_dmeson_collision::dmesonSel == true;
   Filter trackFilter = (aod::track::eta > static_cast<float>(-etaTrackMax)) && (aod::track::eta < static_cast<float>(etaTrackMax)) && (aod::track::pt > static_cast<float>(ptTrackMin)) && (aod::track::dcaXY > static_cast<float>(-dcaXYTrackMax)) && (aod::track::dcaXY < static_cast<float>(dcaXYTrackMax)) &&
                        (aod::track::dcaZ > static_cast<float>(-dcaZTrackMax)) && (aod::track::dcaZ < static_cast<float>(dcaZTrackMax));
@@ -635,7 +635,7 @@ struct HfCorrelatorD0Hadrons {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // ========================================================== Implement Event mixing on Data ========================================================================================
-  
+
   void processDataMixedEvent(SelectedCollisions& collisions, SelectedCandidatesData& candidates, SelectedTracks& tracks)
   {
     auto tracksTuple = std::make_tuple(candidates, tracks);
@@ -695,7 +695,6 @@ struct HfCorrelatorD0Hadrons {
   }
   PROCESS_SWITCH(HfCorrelatorD0Hadrons, processDataMixedEvent, "Process data mixezd event", false);
 
-  
   // ========================================================== Implement Event mixing on McRec ========================================================================================
 
   void processMcRecMixedEvent(SelectedCollisions& collisions, SelectedCandidatesMcRec& candidates, SelectedTracks& tracks)
@@ -796,7 +795,7 @@ struct HfCorrelatorD0Hadrons {
   PROCESS_SWITCH(HfCorrelatorD0Hadrons, processMcRecMixedEvent, "Process Mixed Event MCRec", false);
 
   // ========================================================== Implement Event mixing on MC Gen ========================================================================================
-  
+
   void processMcGenMixedEvent(SelectedCollisionsMcGen& collisions, SelectedTracksMcGen& particlesMc)
   {
 
