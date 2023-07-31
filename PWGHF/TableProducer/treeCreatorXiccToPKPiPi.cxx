@@ -17,12 +17,11 @@
 ///
 /// \author Jinjoo Seo <jin.joo.seo@cern.ch>, Inha University
 
-#include "Framework/runDataProcessing.h"
 #include "Framework/AnalysisTask.h"
+#include "Framework/runDataProcessing.h"
+
 #include "PWGHF/DataModel/CandidateReconstructionTables.h"
 #include "PWGHF/DataModel/CandidateSelectionTables.h"
-#include "Common/Core/trackUtilities.h"
-#include "ReconstructionDataFormats/DCA.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -83,7 +82,7 @@ DECLARE_SOA_COLUMN(RunNumber, runNumber, int);
 } // namespace full
 
 // put the arguments into the table
-DECLARE_SOA_TABLE(HfCandXiccFull, "AOD", "HFCANDXiccFull",
+DECLARE_SOA_TABLE(HfCandXiccFulls, "AOD", "HFCANDXICCFULL",
                   full::RSecondaryVertex,
                   full::DecayLength,
                   full::DecayLengthXY,
@@ -137,7 +136,7 @@ DECLARE_SOA_TABLE(HfCandXiccFull, "AOD", "HFCANDXiccFull",
                   full::MCflag,
                   full::OriginMcRec);
 
-DECLARE_SOA_TABLE(HfCandXiccFullEvents, "AOD", "HFCANDXiccFullE",
+DECLARE_SOA_TABLE(HfCandXiccFullEs, "AOD", "HFCANDXICCFULLE",
                   collision::BCId,
                   collision::NumContrib,
                   collision::PosX,
@@ -146,7 +145,7 @@ DECLARE_SOA_TABLE(HfCandXiccFullEvents, "AOD", "HFCANDXiccFullE",
                   full::IsEventReject,
                   full::RunNumber);
 
-DECLARE_SOA_TABLE(HfCandXiccFullParticles, "AOD", "HFCANDXiccFullP",
+DECLARE_SOA_TABLE(HfCandXiccFullPs, "AOD", "HFCANDXICCFULLP",
                   collision::BCId,
                   full::Pt,
                   full::Eta,
@@ -159,9 +158,9 @@ DECLARE_SOA_TABLE(HfCandXiccFullParticles, "AOD", "HFCANDXiccFullP",
 
 /// Writes the full information in an output TTree
 struct HfTreeCreatorXiccToPKPiPi {
-  Produces<o2::aod::HfCandXiccFull> rowCandidateFull;
-  Produces<o2::aod::HfCandXiccFullEvents> rowCandidateFullEvents;
-  Produces<o2::aod::HfCandXiccFullParticles> rowCandidateFullParticles;
+  Produces<o2::aod::HfCandXiccFulls> rowCandidateFull;
+  Produces<o2::aod::HfCandXiccFullEs> rowCandidateFullEvents;
+  Produces<o2::aod::HfCandXiccFullPs> rowCandidateFullParticles;
 
   void init(InitContext const&)
   {

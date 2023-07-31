@@ -15,14 +15,16 @@
 /// \author Chiara Zampolli, <Chiara.Zampolli@cern.ch>, CERN
 ///         Paul Buehler, <paul.buehler@oeaw.ac.at>, Vienna
 
-#include "Framework/runDataProcessing.h"
-#include "Framework/AnalysisTask.h"
 #include "DCAFitter/DCAFitterN.h"
-#include "PWGHF/DataModel/CandidateReconstructionTables.h"
-#include "PWGHF/Utils/utilsBfieldCCDB.h"
-#include "Common/Core/trackUtilities.h"
+#include "Framework/AnalysisTask.h"
+#include "Framework/runDataProcessing.h"
 #include "ReconstructionDataFormats/DCA.h"
 #include "ReconstructionDataFormats/V0.h"
+
+#include "Common/Core/trackUtilities.h"
+
+#include "PWGHF/DataModel/CandidateReconstructionTables.h"
+#include "PWGHF/Utils/utilsBfieldCCDB.h"
 #include "PWGHF/Utils/utilsDebugLcToK0sP.h"
 
 using namespace o2;
@@ -62,7 +64,6 @@ struct HfCandidateCreatorCascade {
   Configurable<bool> isRun2{"isRun2", false, "enable Run 2 or Run 3 GRP objects for magnetic field"};
   Configurable<std::string> ccdbUrl{"ccdbUrl", "http://alice-ccdb.cern.ch", "url of the ccdb repository"};
   Configurable<std::string> ccdbPathLut{"ccdbPathLut", "GLO/Param/MatLUT", "Path for LUT parametrization"};
-  Configurable<std::string> ccdbPathGeo{"ccdbPathGeo", "GLO/Config/GeometryAligned", "Path of the geometry file"};
   Configurable<std::string> ccdbPathGrp{"ccdbPathGrp", "GLO/GRP/GRP", "Path of the grp file (Run 2)"};
   Configurable<std::string> ccdbPathGrpMag{"ccdbPathGrpMag", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object (Run 3)"};
 
@@ -95,9 +96,6 @@ struct HfCandidateCreatorCascade {
     ccdb->setCaching(true);
     ccdb->setLocalObjectValidityChecking();
     lut = o2::base::MatLayerCylSet::rectifyPtrFromFile(ccdb->get<o2::base::MatLayerCylSet>(ccdbPathLut));
-    if (!o2::base::GeometryManager::isGeometryLoaded()) {
-      ccdb->get<TGeoManager>(ccdbPathGeo);
-    }
     runNumber = 0;
   }
 
@@ -268,7 +266,7 @@ struct HfCandidateCreatorCascadeMc {
     int indexRec = -1;
     std::vector<int> arrDaughLcIndex;
     std::array<int, 3> arrDaughLcPDG;
-    std::array<int, 3> arrDaughLcPDGRef = {2212, 211, -211};
+    std::array<int, 3> arrDaughLcPDGRef = {+kProton, +kPiPlus, -kPiPlus};
 
     // Match reconstructed candidates.
     rowCandidateCasc->bindExternalIndices(&tracks);
@@ -297,7 +295,7 @@ struct HfCandidateCreatorCascadeMc {
       MY_DEBUG_MSG(isK0SfromLc, LOG(info) << "correct K0S in the Lc daughters: posTrack --> " << indexV0DaughPos << ", negTrack --> " << indexV0DaughNeg);
 
       // if (isLc) {
-      RecoDecay::getMatchedMCRec(particlesMC, arrayDaughtersV0, kK0Short, array{+kPiPlus, -kPiPlus}, true, &sign, 1); // does it matter the "acceptAntiParticle" in the K0s case? In principle, there is no anti-K0s
+      RecoDecay::getMatchedMCRec(particlesMC, arrayDaughtersV0, kK0Short, array{+kPiPlus, -kPiPlus}, false, &sign, 1);
 
       if (sign != 0) { // we have already positively checked the K0s
         // then we check the Lc
@@ -321,7 +319,11 @@ struct HfCandidateCreatorCascadeMc {
     for (const auto& particle : particlesMC) {
       origin = 0;
       // checking if I have a Lc --> K0S + p
-      RecoDecay::isMatchedMCGen(particlesMC, particle, pdg::Code::kLambdaCPlus, array{+kProton, +kK0Short}, true, &sign, 2);
+      RecoDecay::isMatchedMCGen(particlesMC, particle, pdg::Code::kLambdaCPlus, array{+kProton, +kK0Short}, false, &sign, 2);
+      if (sign == 0) { // now check for anti-Lc
+        RecoDecay::isMatchedMCGen(particlesMC, particle, -pdg::Code::kLambdaCPlus, array{-kProton, +kK0Short}, false, &sign, 2);
+        sign = -sign;
+      }
       if (sign != 0) {
         MY_DEBUG_MSG(sign, LOG(info) << "Lc in K0S p");
         arrDaughLcIndex.clear();
@@ -332,7 +334,7 @@ struct HfCandidateCreatorCascadeMc {
             auto daughI = particlesMC.rawIteratorAt(arrDaughLcIndex[iProng]);
             arrDaughLcPDG[iProng] = daughI.pdgCode();
           }
-          if (!(arrDaughLcPDG[0] == arrDaughLcPDGRef[0] && arrDaughLcPDG[1] == arrDaughLcPDGRef[1] && arrDaughLcPDG[2] == arrDaughLcPDGRef[2])) { // this should be the condition, first bach, then v0
+          if (!(arrDaughLcPDG[0] == sign * arrDaughLcPDGRef[0] && arrDaughLcPDG[1] == arrDaughLcPDGRef[1] && arrDaughLcPDG[2] == arrDaughLcPDGRef[2])) { // this should be the condition, first bach, then v0
             sign = 0;
           } else {
             LOG(debug) << "Lc --> K0S+p found in MC table";
