@@ -89,7 +89,7 @@ struct HfCorrelatorD0HadronsSelection {
   SliceCache cache;
 
   Produces<aod::DmesonSelection> d0Sel;
-  
+
   Configurable<int> selectionFlagD0{"selectionFlagD0", 1, "Selection Flag for D0"};
   Configurable<int> selectionFlagD0bar{"selectionFlagD0bar", 1, "Selection Flag for D0bar"};
   Configurable<float> yCandMax{"yCandMax", 4.0, "max. cand. rapidity"};
@@ -108,8 +108,8 @@ struct HfCorrelatorD0HadronsSelection {
       for (auto const& candidate1 : selectedD0CandidatesGrouped) {
         // check decay channel flag for candidate1
         if (!TESTBIT(candidate1.hfflag(), DecayType::D0ToPiK)) {
-        continue;
-      }
+          continue;
+        }
         if (yCandMax >= 0. && std::abs(yD0(candidate1)) > yCandMax) {
           continue;
         }
@@ -131,7 +131,7 @@ struct HfCorrelatorD0HadronsSelection {
       for (auto const& candidate1 : selectedD0CandidatesGroupedMc) {
         // check decay channel flag for candidate1
         if (!TESTBIT(candidate1.hfflag(), DecayType::D0ToPiK)) {
-        continue;
+          continue;
         }
         if (yCandMax >= 0. && std::abs(yD0(candidate1)) > yCandMax) {
           continue;
@@ -189,11 +189,11 @@ struct HfCorrelatorD0Hadrons {
   Configurable<float> ptSoftPionMax{"ptSoftPionMax", 3 * 800. * pow(10., -6.), "max. pT cut for soft pion identification"};
 
   Preslice<aod::HfCand2Prong> perCol = aod::hf_cand::collisionId;
-  
+
   Partition<soa::Join<aod::HfCand2Prong, aod::HfSelD0>> selectedD0Candidates = aod::hf_sel_candidate_d0::isSelD0 >= selectionFlagD0 || aod::hf_sel_candidate_d0::isSelD0bar >= selectionFlagD0bar;
   Partition<soa::Join<aod::HfCand2Prong, aod::HfSelD0, aod::HfCand2ProngMcRec>> selectedD0candidatesMc = aod::hf_sel_candidate_d0::isSelD0 >= selectionFlagD0 || aod::hf_sel_candidate_d0::isSelD0bar >= selectionFlagD0bar;
-  
-  //Filters for ME
+
+  // Filters for ME
   Filter collisionFilter = aod::hf_selection_dmeson_collision::dmesonSel == true;
   Filter trackFilter = (aod::track::eta > static_cast<float>(-etaTrackMax)) && (aod::track::eta < static_cast<float>(etaTrackMax)) && (aod::track::pt > static_cast<float>(ptTrackMin)) && (aod::track::dcaXY > static_cast<float>(-dcaXYTrackMax)) && (aod::track::dcaXY < static_cast<float>(dcaXYTrackMax)) &&
                        (aod::track::dcaZ > static_cast<float>(-dcaZTrackMax)) && (aod::track::dcaZ < static_cast<float>(dcaZTrackMax));
@@ -420,7 +420,7 @@ struct HfCorrelatorD0Hadrons {
 
     for (auto const& candidate1 : selectedD0CandidatesGroupedMc) {
       // check decay channel flag for candidate1
-     if (!TESTBIT(candidate1.hfflag(), DecayType::D0ToPiK)) {
+      if (!TESTBIT(candidate1.hfflag(), DecayType::D0ToPiK)) {
         continue;
       }
       if (yCandMax >= 0. && std::abs(yD0(candidate1)) > yCandMax) {
@@ -631,9 +631,8 @@ struct HfCorrelatorD0Hadrons {
 
   PROCESS_SWITCH(HfCorrelatorD0Hadrons, processMcGen, "Process MC Gen mode", false);
 
-
   // ====================== Implement Event mixing on Data ===================================
-  
+
   void processDataMixedEvent(SelectedCollisions& collisions, SelectedCandidatesData& candidates, SelectedTracks& tracks)
   {
     auto tracksTuple = std::make_tuple(candidates, tracks);
@@ -693,7 +692,6 @@ struct HfCorrelatorD0Hadrons {
   }
   PROCESS_SWITCH(HfCorrelatorD0Hadrons, processDataMixedEvent, "Process data mixezd event", false);
 
-  
   // ====================== Implement Event mixing on McRec ===================================
 
   void processMcRecMixedEvent(SelectedCollisions& collisions, SelectedCandidatesMcRec& candidates, SelectedTracks& tracks)
@@ -794,7 +792,7 @@ struct HfCorrelatorD0Hadrons {
   PROCESS_SWITCH(HfCorrelatorD0Hadrons, processMcRecMixedEvent, "Process Mixed Event MCRec", false);
 
   // ====================== Implement Event mixing on McGen ===================================
-  
+
   void processMcGenMixedEvent(SelectedCollisionsMcGen& collisions, SelectedTracksMcGen& particlesMc)
   {
 
