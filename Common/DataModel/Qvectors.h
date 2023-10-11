@@ -27,7 +27,7 @@ namespace o2::aod
 {
 namespace qvec
 {
-DECLARE_SOA_COLUMN(Cent, cent, float);             //! Centrality percentile.
+DECLARE_SOA_COLUMN(Cent, cent, float); //! Centrality percentile.
 DECLARE_SOA_COLUMN(CentBin, centBin, int);
 DECLARE_SOA_COLUMN(QvecUncorRe, qvecUncorRe, float);
 DECLARE_SOA_COLUMN(QvecUncorIm, qvecUncorIm, float);

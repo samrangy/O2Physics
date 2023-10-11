@@ -27,7 +27,7 @@ namespace o2::aod
 {
 namespace ep
 {
-DECLARE_SOA_COLUMN(Cent, cent, float);           //! Centrality percentile.
+DECLARE_SOA_COLUMN(Cent, cent, float); //! Centrality percentile.
 DECLARE_SOA_COLUMN(EvtPlUncor, evtPlUncor, float);
 DECLARE_SOA_COLUMN(EvtPlRectr, evtPlRectr, float);
 DECLARE_SOA_COLUMN(EvtPlTwist, evtPlTwist, float);
